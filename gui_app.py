@@ -6,6 +6,7 @@ import subprocess
 import sys
 import threading
 
+
 class StressAnalysisApp:
     def __init__(self, root):
         """Initialize the application."""
@@ -39,23 +40,31 @@ class StressAnalysisApp:
         main_frame.pack(fill=tk.BOTH, expand=True)
         top_frame = ttk.Frame(main_frame)
         top_frame.pack(fill=tk.X, pady=(0, 10))
-        self.upload_btn = ttk.Button(top_frame, text="📂 1. Upload CSV", command=self.upload_csv)
+        self.upload_btn = ttk.Button(
+            top_frame, text="📂 1. Upload CSV", command=self.upload_csv
+        )
         self.upload_btn.pack(side=tk.LEFT, padx=(0, 10))
         self.analyze_btn = ttk.Button(
-            top_frame, 
-            text="🚀 2. Run XGBoost Analysis", 
-            command=self.run_analysis_threaded, 
+            top_frame,
+            text="🚀 2. Run XGBoost Analysis",
+            command=self.run_analysis_threaded,
             state=tk.DISABLED,
-            style="Success.TButton"
+            style="Success.TButton",
         )
         self.analyze_btn.pack(side=tk.LEFT, padx=(0, 10))
-        self.info_label = ttk.Label(top_frame, text="Please upload a survey CSV file to begin.", style="Info.TLabel")
+        self.info_label = ttk.Label(
+            top_frame,
+            text="Please upload a survey CSV file to begin.",
+            style="Info.TLabel",
+        )
         self.info_label.pack(side=tk.LEFT, fill=tk.X, expand=True)
         tree_frame = ttk.Frame(main_frame)
         tree_frame.pack(fill=tk.BOTH, expand=True)
         self.tree = ttk.Treeview(tree_frame, show="headings")
         v_scroll = ttk.Scrollbar(tree_frame, orient="vertical", command=self.tree.yview)
-        h_scroll = ttk.Scrollbar(tree_frame, orient="horizontal", command=self.tree.xview)
+        h_scroll = ttk.Scrollbar(
+            tree_frame, orient="horizontal", command=self.tree.xview
+        )
         self.tree.configure(yscrollcommand=v_scroll.set, xscrollcommand=h_scroll.set)
         v_scroll.pack(side=tk.RIGHT, fill="y")
         h_scroll.pack(side=tk.BOTTOM, fill="x")
@@ -64,7 +73,7 @@ class StressAnalysisApp:
     def upload_csv(self):
         file_path = filedialog.askopenfilename(
             title="Select a Survey CSV",
-            filetypes=[("CSV Files", "*.csv"), ("All Files", "*.*")]
+            filetypes=[("CSV Files", "*.csv"), ("All Files", "*.*")],
         )
         if not file_path:
             return
@@ -92,10 +101,12 @@ class StressAnalysisApp:
         """Runs the analysis in a separate thread to keep the UI from freezing."""
         self.analyze_btn.config(state=tk.DISABLED, text="⏳ Optimizing XGBoost...")
         self.root.update_idletasks()
-        
+
         # Run the analysis in a background thread
         thread = threading.Thread(target=self.run_analysis_subprocess)
-        thread.daemon = True # Allows the main app to exit even if the thread is running
+        thread.daemon = (
+            True  # Allows the main app to exit even if the thread is running
+        )
         thread.start()
 
     def run_analysis_subprocess(self):
@@ -112,20 +123,22 @@ class StressAnalysisApp:
             # This lets you see the GridSearch progress.
             # We also capture stderr to display it in case of an error.
             process = subprocess.run(
-                command, 
-                check=True, 
-                capture_output=True, 
-                text=True, 
-                encoding='utf-8'
+                command, check=True, capture_output=True, text=True, encoding="utf-8"
             )
-            print(process.stdout) # Print any output from the script upon success
+            print(process.stdout)  # Print any output from the script upon success
             print("✅ Analysis complete.")
 
         except FileNotFoundError:
-            messagebox.showerror("Error", "Could not find 'stress.py'. Make sure it is in the same folder.")
+            messagebox.showerror(
+                "Error",
+                "Could not find 'stress.py'. Make sure it is in the same folder.",
+            )
         except subprocess.CalledProcessError as e:
             # This is the key fix: Display the actual error from the script
-            messagebox.showerror("Analysis Script Error", f"The analysis script failed to run.\n\nERROR:\n{e.stderr}")
+            messagebox.showerror(
+                "Analysis Script Error",
+                f"The analysis script failed to run.\n\nERROR:\n{e.stderr}",
+            )
         except Exception as e:
             messagebox.showerror("An Unexpected Error Occurred", str(e))
         finally:
